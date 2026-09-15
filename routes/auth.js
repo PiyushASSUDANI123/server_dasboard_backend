@@ -2,17 +2,20 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-// IN A REAL APP, STORE THIS IN .env
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-12345';
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin'; // In a real app, hash this!
+
+const users = {
+  [process.env.ADMIN_USERNAME || 'admin']: { password: process.env.ADMIN_PASSWORD || 'admin', role: 'admin' },
+  'guest': { password: 'guest', role: 'viewer' }
+};
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ success: true, token });
+  const user = users[username];
+  if (user && user.password === password) {
+    const token = jwt.sign({ username, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token, role: user.role });
   } else {
     res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
@@ -38,11 +41,19 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+    req.user = decoded; // Contains { username, role }
     next();
   } catch (err) {
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
 
-module.exports = { router, authMiddleware, JWT_SECRET };
+const requireAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
+  }
+};
+
+module.exports = { router, authMiddleware, requireAdmin, JWT_SECRET };

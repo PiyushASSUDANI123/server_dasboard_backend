@@ -15,6 +15,7 @@ const io = new Server(server, {
 
 const { router: authRouter } = require('./routes/auth');
 const systemRouter = require('./routes/system');
+const filesRouter = require('./routes/files');
 
 // Middleware
 app.use(cors());
@@ -23,6 +24,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/system', systemRouter);
+app.use('/api/files', filesRouter);
 
 // Socket.io connection
 io.on('connection', (socket) => {
