@@ -18,6 +18,9 @@ const systemRouter = require('./routes/system');
 const filesRouter = require('./routes/files');
 const dockerRouter = require('./routes/docker');
 const cronRouter = require('./routes/cron');
+const hardwareRouter = require('./routes/hardware');
+const uptimeRouter = require('./routes/uptime');
+const backupRouter = require('./routes/backup');
 
 // Middleware
 app.use(cors());
@@ -29,6 +32,9 @@ app.use('/api/system', systemRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/docker', dockerRouter);
 app.use('/api/cron', cronRouter);
+app.use('/api/hardware', hardwareRouter);
+app.use('/api/uptime', uptimeRouter);
+app.use('/api/backup', backupRouter);
 
 const { initPtySocket } = require('./ptyService');
 
